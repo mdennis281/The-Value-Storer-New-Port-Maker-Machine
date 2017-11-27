@@ -7,10 +7,12 @@
 #include<unistd.h>
 #include<netdb.h>
 #include<time.h>
+#include<arpa/inet.h>
 
 typedef enum {false, true} bool;
 
-global int total;
+//global total variable
+int total;
 
 int main(int argc, char ** argv)
 {
@@ -25,7 +27,8 @@ int main(int argc, char ** argv)
 	char c_total[24];	//total as a character
 	char buffer[256];	//buffer for read & write
 
-	struct sockaddr_in s_addr;	//server address
+	struct sockaddr_in r_addr,	//remote address
+			   l_addr;	//local address
 
 	struct hostent *serv;		//host server
 
@@ -38,7 +41,7 @@ int main(int argc, char ** argv)
 	//set port number
 	p_no = atoi(argv[2]);
 	//set IP address
-	r_ip = atoi(argv[3]);
+	//r_ip = atoi(argv[3]);
 
 	//create socket
 	s_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -48,19 +51,43 @@ int main(int argc, char ** argv)
 		exit(1);
 	}
 
-	//get host server
-	serv = gethostbyname(argv[1]);
-	if(serv == NULL)
+        //zero out server addresses
+        bzero((char *) &r_addr, sizeof(r_addr));
+	bzero((char *) &l_addr, sizeof(l_addr));
+
+        //get host server
+        serv = gethostbyname(argv[1]);
+        if(serv == NULL)
+        {
+                perror("host");
+                exit(1);
+        }
+
+	//set all local server info
+	l_addr.sin_family = AF_INET;
+	bcopy((char *)serv->h_addr, (char *)&l_addr.sin_addr.s_addr, serv->h_length);
+	l_addr.sin_port = htons(p_no);
+
+	//bind local
+	if(bind(s_fd, (struct sockaddr *)&l_addr, sizeof(l_addr)) < 1)
 	{
-		perror("host");
+		perror("bind");
 		exit(1);
 	}
 
-	//zero out server address
-	bzero((char *) &s_addr, sizeof(s_addr));
+        //set all remote server info
+        r_addr.sin_family = AF_INET;
+	r_addr.sin_addr.s_addr = inet_addr(argv[3]);
+	r_addr.sin_port = htons(p_no);
 
-	//set all server info
-	s_addr.sin_family = AF_INET;
+	//connect remote
+	if(connect(s_fd, (struct sockaddr *)&r_addr, sizeof(r_addr)) < 0)
+	{
+		perror("connect");
+		exit(1);
+	}
+
+	close(s_fd);
 
 	return 0;
 }

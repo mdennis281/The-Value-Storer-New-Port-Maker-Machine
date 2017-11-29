@@ -23,9 +23,14 @@ int main(int argc, char ** argv)
 	int p_no;		//port number (from command line)
 	int n;			//read / write error check
 
+	bool cont = true;	//continue loop?
+
 	fd_set fds;		//for polling
 
-	char buffer[256];
+	char c_total1[16],	//client 1 total as char
+	     c_total2[16];	//client 2 total as char
+	char buffer[256];	//buffer for info
+	char * border = "*******************************\n";
 
 	struct sockaddr_in s_addr,	//server address
 			   c_addr1,	//client 1 address
@@ -62,8 +67,37 @@ int main(int argc, char ** argv)
 	}
 
 	//listen
+	listen(s_fd, 5);
 
-	//accept
+	printf("%s", border);
+
+	//accept 1
+	c_len1 = sizeof(c_addr1);
+	ns1_fd = accept(s_fd, (struct sockaddr *) &c_addr1, &c_len1);
+	if(ns1_fd < 0)
+	{
+		perror("accept client 1");
+		exit(1);
+	}
+
+	//accept 2
+	c_len2 = sizeof(c_addr2);
+	ns2_fd = accept(s_fd, (struct sockaddr *) &c_addr2, &c_len2);
+	if(ns2_fd < 0)
+	{
+		perror("accept client 2");
+		exit(1);
+	}
+
+	printf("%s", border);
+
+	//get max file descriptor
+	m_fd = (ns1_fd > ns2_fd ? ns1_fd : ns2_fd) + 1;
+
+	while(cont)
+	{
+
+	}
 
 	return 0;
 }

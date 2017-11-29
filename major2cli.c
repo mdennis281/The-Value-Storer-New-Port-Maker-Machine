@@ -11,28 +11,24 @@
 
 typedef enum {false, true} bool;
 
-//global total variable
-int total;
-
 int main(int argc, char ** argv)
 {
-	//working major 2 belongs here
-
-	int s_fd;		//listen socket
+	int s_fd,		//server socket
+	    r_fd;		//remote socket
 	int p_no;		//port number
-	int r_ip;		//remote IP
 	int n;			//error check read & write
 	int i, j;		//iterators
+	int total;		//clients total
 
-	char c_total[24];	//total as a character
+	char c_total[16];	//total as a character
 	char buffer[256];	//buffer for read & write
 
 	struct sockaddr_in r_addr,	//remote address
-			   l_addr;	//local address
+			   s_addr;	//server address
 
 	struct hostent *serv;		//host server
 
-	if(argc < 4)
+	if(argc != 4)
 	{
 		printf("USAGE: ./cli (host name) (port #) (remote IP)\n");
 		exit(1);
@@ -40,38 +36,54 @@ int main(int argc, char ** argv)
 
 	//set port number
 	p_no = atoi(argv[2]);
-	//set IP address
-	//r_ip = atoi(argv[3]);
 
-	//create socket
-	s_fd = socket(AF_INET, SOCK_STREAM, 0);
+	//create local socket
+//	if(
+//	{
+		s_fd = socket(AF_INET, SOCK_STREAM, 0);
+		if(s_fd < 0)
+		{
+			perror("socket local");
+			exit(1);
+		}
+//	}
+
+	//create remote socket
+	r_fd = socket(AF_INET, SOCK_STREAM, 0);
 	if(s_fd < 0)
 	{
-		perror("socket");
+		perror("socket remote");
 		exit(1);
 	}
 
         //zero out server addresses
         bzero((char *) &r_addr, sizeof(r_addr));
-	bzero((char *) &l_addr, sizeof(l_addr));
+	bzero((char *) &s_addr, sizeof(s_addr));
 
         //get host server
         serv = gethostbyname(argv[1]);
         if(serv == NULL)
         {
-                perror("host");
+                perror("host name resolution");
                 exit(1);
         }
 
 	//set all local server info
-	l_addr.sin_family = AF_INET;
-	bcopy((char *)serv->h_addr, (char *)&l_addr.sin_addr.s_addr, serv->h_length);
-	l_addr.sin_port = htons(p_no);
+	s_addr.sin_family = AF_INET;
+	bcopy((char *)serv->h_addr, (char *)&s_addr.sin_addr.s_addr, serv->h_length);
+	s_addr.sin_port = htons(p_no);
 
 	//bind local
-	if(bind(s_fd, (struct sockaddr *)&l_addr, sizeof(l_addr)) < 1)
+	/*if(bind(s_fd, (struct sockaddr *)&l_addr, sizeof(l_addr)) < 1)
 	{
-		perror("bind");
+		perror("bind local");
+		exit(1);
+	}*/
+
+	//connect local
+	if(connect(s_fd, (struct sockaddr *)&s_addr, sizeof(s_addr)) < 0)
+	{
+		perror("connect server");
 		exit(1);
 	}
 
@@ -80,14 +92,23 @@ int main(int argc, char ** argv)
 	r_addr.sin_addr.s_addr = inet_addr(argv[3]);
 	r_addr.sin_port = htons(p_no);
 
-	//connect remote
-	if(connect(s_fd, (struct sockaddr *)&r_addr, sizeof(r_addr)) < 0)
+	//bind remote
+	/*if(bind(r_fd, (struct sockaddr *)&r_addr, sizeof(r_addr)) < 1)
 	{
-		perror("connect");
+		perror("bind remote");
+		exit(1);
+	}*/
+
+	//connect remote
+	if(connect(r_fd, (struct sockaddr *)&r_addr, sizeof(r_addr)) < 0)
+	{
+		perror("connect remote");
 		exit(1);
 	}
 
+	//close sockets
 	close(s_fd);
+	close(r_fd);
 
 	return 0;
 }

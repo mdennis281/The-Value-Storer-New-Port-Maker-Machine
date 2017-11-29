@@ -68,15 +68,17 @@ int main(int argc, char ** argv)
 	bcopy((char *)serv->h_addr, (char *)&l_addr.sin_addr.s_addr, serv->h_length);
 	l_addr.sin_port = htons(p_no);
 
-	//bind local
-	if(bind(s_fd, (struct sockaddr *)&l_addr, sizeof(l_addr)) < 1)
-	{
-		perror("bind");
-		exit(1);
-	}
+	// Don't need to bind because if we do we can't use the same port as the server for some reason wooooo!!
+        /*	//bind local
+	        if(bind(s_fd, (struct sockaddr *)&l_addr, sizeof(l_addr)) < 1)
+	        {
+		        perror("bind");
+		        exit(1);
+	        }
+        */
 
-        //set all remote server info
-        r_addr.sin_family = AF_INET;
+	//set all remote server info
+    	r_addr.sin_family = AF_INET;
 	r_addr.sin_addr.s_addr = inet_addr(argv[3]);
 	r_addr.sin_port = htons(p_no);
 
@@ -86,6 +88,19 @@ int main(int argc, char ** argv)
 		perror("connect");
 		exit(1);
 	}
+
+	// Communicate with server
+	while(1)
+    	{
+        	printf(">> ");
+        	scanf("%s", buffer);
+
+        	if(strcmp(buffer, "exit") == 0)
+        	{
+            		close(s_fd);
+            		return 0;
+        	}
+    	}
 
 	close(s_fd);
 

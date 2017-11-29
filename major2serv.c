@@ -10,16 +10,17 @@
 
 typedef enum {false, true} bool;
 
+void connection_handler(void *);
+
 int main(int argc, char ** argv)
 {
 	int total1,		//client 1 total
 	    total2;		//client 2 total
 	int s_fd;		//socket file descriptor
-	int ns1_fd,		//client 1 fd
-	    ns2_fd;		//client 2 fd
+    	int c_fd;		//generic client file descriptor, don't need specific ones since we thread them away
+    	int len;		//length of client
+    	int *new_sock;		//passed to thread 
 	int m_fd;		//max fd
-	int c_len1,		//client length 1
-	    c_len2;		//client length 2
 	int p_no;		//port number (from command line)
 	int n;			//read / write error check
 
@@ -28,8 +29,7 @@ int main(int argc, char ** argv)
 	char buffer[256];
 
 	struct sockaddr_in s_addr,	//server address
-			   c_addr1,	//client 1 address
-			   c_addr2;	//client 2 address
+                        c_addr;		//client address
 
 	if(argc != 2)
 	{
@@ -61,9 +61,39 @@ int main(int argc, char ** argv)
 		exit(1);
 	}
 
-	//listen
+	//listen for 2 clients
+    	listen(s_fd, 2);
 
 	//accept
+    	puts("Waiting for incoming connections..");
+    	len = sizeof(struct sockaddr_in);
+
+	// Continuously listen and accept new clients and thread them off once we get one
+    	while((c_fd = accept(s_fd, (struct sockaddr *)&c_addr, (socklen_t*)&len)))
+    	{
+       		puts("[Received a connection from a client.]");
+
+        	pthread_t handler;
+        	new_sock = malloc(sizeof new_sock);
+        	*new_sock = c_fd;
+
+		// Thread the client away 
+        	if(pthread_create(&handler, NULL, connection_handler, (void*)new_sock) < 0)
+        	{
+            		perror("pthread");
+            		exit(1);
+       		}
+
+        	puts("[Handler assigned.]");
+    	}
 
 	return 0;
+}
+
+void connection_handler(void *s_desc)
+{
+    puts("\n[Inside pthread handler for client.]\n");
+    pthread_exit(NULL);
+
+    return;
 }

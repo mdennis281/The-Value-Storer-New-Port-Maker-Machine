@@ -64,10 +64,10 @@ int main(int argc, char ** argv)
                 exit(1);
         }
 
-	printf("Server IP Address: %s\n", /*(char *)serv->h_addr*/return_IP(serv));
+	printf("Server IP Address: %s\n", "192.168.122.106");
 
 	//AF_UNIX client
-	if(strcmp(/*(char *)serv->h_addr*/return_IP(serv), argv[3]) != 0)
+	if(strcmp("192.168.122.106", argv[3]) != 0)
 	{
 		printf("Detected as AF_UNIX client\n");
 
@@ -85,7 +85,7 @@ int main(int argc, char ** argv)
 		strcpy(u_addr.sun_path, SOCKETNAME);
 	}
 	//AF_INET client
-	else if(strcmp(/*(char *)serv->h_addr*/return_IP(serv), argv[3]) == 0)
+	else if(strcmp("192.168.122.106", argv[3]) == 0)
 	{
 		printf("Detected as AF_INET client\n");
 

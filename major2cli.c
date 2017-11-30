@@ -79,9 +79,13 @@ int main(int argc, char ** argv)
                 exit(1);
         }
 
+	printf("Server IP Address: %s\n", (char *)serv->h_addr);
+
 	//AF_UNIX client
 	if(strcmp((char *)serv->h_addr, argv[3]) != 0)
 	{
+		printf("Detected as AF_UNIX client\n");
+
 		unixf = true;
 
 		s_fd = socket(AF_UNIX, SOCK_STREAM, 0);
@@ -98,6 +102,8 @@ int main(int argc, char ** argv)
 	//AF_INET client
 	else if(strcmp((char *)serv->h_addr, argv[3]) == 0)
 	{
+		printf("Detected as AF_INET client\n");
+
 		inetf = true;
 
 		s_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -132,7 +138,7 @@ int main(int argc, char ** argv)
 	}*/
 
 	//connect local
-	if(unixf)
+	if(unixf == true)
 	{
 		if(connect(s_fd, (struct sockaddr *)&u_addr, sizeof(u_addr)) < 0)
 		{
@@ -140,7 +146,7 @@ int main(int argc, char ** argv)
 			exit(1);
 		}
 	}
-	else if(inetf)
+	else if(inetf == true)
 	{
 		if(connect(s_fd, (struct sockaddr *)&i_addr, sizeof(i_addr)) < 0)
 		{
@@ -152,9 +158,9 @@ int main(int argc, char ** argv)
         //set all remote server info
         r_addr.sin_family = AF_INET;
 	r_addr.sin_addr.s_addr = inet_addr(argv[3]);
-	if(inetf)
-		r_addr.sin_port = htons(p_no);
-	else if(unixf)
+	if(inetf == true)
+		r_addr.sin_port = htons(15106);
+	else if(unixf == true)
 		r_addr.sin_port = htons(15129);
 
 	//bind remote

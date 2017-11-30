@@ -1,19 +1,4 @@
-#include<string.h>
-#include<stdlib.h>
-#include<stdio.h>
-#include<sys/types.h>
-#include<sys/socket.h>
-#include<sys/un.h>
-#include<netinet/in.h>
-#include<unistd.h>
-#include<netdb.h>
-#include<time.h>
-#include<arpa/inet.h>
-
-typedef enum {false, true} bool;
-
-//define unix socket
-#define SOCKETNAME "local"
+#include"functions.h"
 
 int main(int argc, char ** argv)
 {
@@ -79,10 +64,10 @@ int main(int argc, char ** argv)
                 exit(1);
         }
 
-	printf("Server IP Address: %s\n", (char *)serv->h_addr);
+	printf("Server IP Address: %s\n", /*(char *)serv->h_addr*/return_IP(serv));
 
 	//AF_UNIX client
-	if(strcmp((char *)serv->h_addr, argv[3]) != 0)
+	if(strcmp(/*(char *)serv->h_addr*/return_IP(serv), argv[3]) != 0)
 	{
 		printf("Detected as AF_UNIX client\n");
 
@@ -100,7 +85,7 @@ int main(int argc, char ** argv)
 		strcpy(u_addr.sun_path, SOCKETNAME);
 	}
 	//AF_INET client
-	else if(strcmp((char *)serv->h_addr, argv[3]) == 0)
+	else if(strcmp(/*(char *)serv->h_addr*/return_IP(serv), argv[3]) == 0)
 	{
 		printf("Detected as AF_INET client\n");
 

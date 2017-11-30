@@ -20,6 +20,7 @@ typedef enum {false, true} bool;
 
 char * return_IP(struct hostent * s)
 {
+printf("BEGIN return_IP(serv)\n");
 	char * ip;
 
 	struct in_addr i;
@@ -28,4 +29,5 @@ char * return_IP(struct hostent * s)
 	strcpy(ip, inet_ntoa(i));
 
 	return ip;
+printf("END return_IP(serv)\n");
 }

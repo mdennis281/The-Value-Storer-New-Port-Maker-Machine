@@ -80,7 +80,7 @@ int main(int argc, char ** argv)
         }
 
 	//AF_UNIX client
-	if((char *)serv->h_addr != argv[3])
+	if(strcmp((char *)serv->h_addr, argv[3]) != 0)
 	{
 		unixf = true;
 
@@ -96,7 +96,7 @@ int main(int argc, char ** argv)
 		strcpy(u_addr.sun_path, SOCKETNAME);
 	}
 	//AF_INET client
-	else if((char *)serv->h_addr == argv[3])
+	else if(strcmp((char *)serv->h_addr, argv[3]) == 0)
 	{
 		inetf = true;
 

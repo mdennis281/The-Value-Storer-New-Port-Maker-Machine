@@ -132,16 +132,30 @@ int main(int argc, char ** argv)
 	}*/
 
 	//connect local
-	if(connect(s_fd, (struct sockaddr *)&i_addr, sizeof(i_addr)) < 0)
+	if(unixf)
 	{
-		perror("connect server");
-		exit(1);
+		if(connect(s_fd, (struct sockaddr *)&u_addr, sizeof(u_addr)) < 0)
+		{
+			perror("connect server unix");
+			exit(1);
+		}
+	}
+	else if(inetf)
+	{
+		if(connect(s_fd, (struct sockaddr *)&i_addr, sizeof(i_addr)) < 0)
+		{
+			perror("connect server inet");
+			exit(1);
+		}
 	}
 
         //set all remote server info
         r_addr.sin_family = AF_INET;
 	r_addr.sin_addr.s_addr = inet_addr(argv[3]);
-	r_addr.sin_port = htons(p_no);
+	if(inetf)
+		r_addr.sin_port = htons(p_no);
+	else if(unixf)
+		r_addr.sin_port = htons(15129);
 
 	//bind remote
 	/*if(bind(r_fd, (struct sockaddr *)&r_addr, sizeof(r_addr)) < 1)

@@ -10,11 +10,15 @@
 
 typedef enum {false, true} bool;
 
+//define AF_UNIX socket for same machine connection
+#define SOCKETNAME "local"
+
 int main(int argc, char ** argv)
 {
 	int total1,		//client 1 total
 	    total2;		//client 2 total
-	int s_fd;		//socket file descriptor
+	int s_fd,		//af _ inet
+	    u_fd;		//af _ unix
 	int ns1_fd,		//client 1 fd
 	    ns2_fd;		//client 2 fd
 	int m_fd;		//max fd
@@ -32,9 +36,13 @@ int main(int argc, char ** argv)
 	char buffer[256];	//buffer for info
 	char * border = "*******************************\n";
 
-	struct sockaddr_in s_addr,	//server address
+	struct sockaddr_in s_addr,	//server address AF_INET
 			   c_addr1,	//client 1 address
 			   c_addr2;	//client 2 address
+	struct sockaddr_un u_addr;	//server address AF_UNIX
+
+	//unlink previos socket, if applicable
+	unlink(SOCKETNAME);
 
 	if(argc != 2)
 	{
@@ -42,36 +50,60 @@ int main(int argc, char ** argv)
 		exit(1);
 	}
 
-	//create socket
+	//create sockets
+	//inet
 	s_fd = socket(AF_INET, SOCK_STREAM, 0);
 	if(s_fd < 0)
 	{
-		perror("socket");
+		perror("socket inet");
+		exit(1);
+	}
+
+	//unix
+	u_fd = socket(AF_UNIX, SOCK_STREAM, 0);
+	if(u_fd < 0)
+	{
+		perror("socket unix");
 		exit(1);
 	}
 
 	//zero the server address
 	bzero((char *) &s_addr, sizeof(s_addr));
+	bzero((char *) &u_addr, sizeof(u_addr));
 
-	//fill in server information
+	//fill in server information AF_INET
 	p_no = atoi(argv[1]);
 	s_addr.sin_family = AF_INET;
 	s_addr.sin_port = htons(p_no);
 	s_addr.sin_addr.s_addr = INADDR_ANY;
 
+	//fill in server information AF_UNIX
+	memset(&u_addr, 0, sizeof(struct sockaddr_un));
+
+	u_addr.sun_family = AF_UNIX;
+	strcpy(u_addr.sun_path, SOCKETNAME);
+
 	//bind
+	//INET
 	if(bind(s_fd, (struct sockaddr *) &s_addr, sizeof(s_addr)) < 0)
 	{
-		perror("bind");
+		perror("bind inet");
+		exit(1);
+	}
+	//UNIX
+	if(bind(u_fd, (struct sockaddr *) &u_addr, sizeof(u_addr)) < 0)
+	{
+		perror("bind unix");
 		exit(1);
 	}
 
 	//listen
-	listen(s_fd, 5);
+	listen(s_fd, 1);
+	listen(u_fd, 1);
 
 	printf("%s", border);
 
-	//accept 1
+	//accept 1 inet
 	c_len1 = sizeof(c_addr1);
 	ns1_fd = accept(s_fd, (struct sockaddr *) &c_addr1, &c_len1);
 	if(ns1_fd < 0)
@@ -80,9 +112,9 @@ int main(int argc, char ** argv)
 		exit(1);
 	}
 
-	//accept 2
+	//accept 2 unix
 	c_len2 = sizeof(c_addr2);
-	ns2_fd = accept(s_fd, (struct sockaddr *) &c_addr2, &c_len2);
+	ns2_fd = accept(u_fd, (struct sockaddr *) &c_addr2, &c_len2);
 	if(ns2_fd < 0)
 	{
 		perror("accept client 2");

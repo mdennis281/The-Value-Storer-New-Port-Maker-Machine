@@ -1,17 +1,4 @@
-#include<unistd.h>
-#include<stdio.h>
-#include<stdlib.h>
-#include<sys/types.h>
-#include<sys/socket.h>
-#include<sys/un.h>
-#include<string.h>
-#include<sys/time.h>
-#include<netinet/in.h>
-
-typedef enum {false, true} bool;
-
-//define AF_UNIX socket for same machine connection
-#define SOCKETNAME "local"
+#include"functions.h"
 
 int main(int argc, char ** argv)
 {
@@ -78,8 +65,6 @@ int main(int argc, char ** argv)
 	s_addr.sin_addr.s_addr = INADDR_ANY;
 
 	//fill in server information AF_UNIX
-	memset(&u_addr, 0, sizeof(struct sockaddr_un));
-
 	u_addr.sun_family = AF_UNIX;
 	strcpy(u_addr.sun_path, SOCKETNAME);
 
@@ -124,7 +109,7 @@ int main(int argc, char ** argv)
 	printf("%s", border);
 
 	//get max file descriptor
-	m_fd = (ns1_fd > ns2_fd ? ns1_fd : ns2_fd) + 1;
+//	m_fd = (ns1_fd > ns2_fd ? ns1_fd : ns2_fd) + 1;
 
 	while(cont)
 	{

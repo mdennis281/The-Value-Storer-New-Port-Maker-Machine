@@ -13,6 +13,7 @@ int main(int argc, char ** argv)
 	    c_len2;		//client length 2
 	int p_no;		//port number (from command line)
 	int n;			//read / write error check
+	int list = 0;		//for listening
 
 	bool cont = true;	//continue loop?
 
@@ -83,8 +84,9 @@ int main(int argc, char ** argv)
 	}
 
 	//listen
+	while(list < 2)
+	{
 	listen(s_fd, 1);
-	listen(u_fd, 1);
 
 	printf("%s", border);
 
@@ -96,6 +98,12 @@ int main(int argc, char ** argv)
 		perror("accept client 1");
 		exit(1);
 	}
+	else
+		list++;
+
+	printf("Accepted INET client!\n");
+
+	listen(u_fd, 1);
 
 	//accept 2 unix
 	c_len2 = sizeof(c_addr2);
@@ -104,6 +112,11 @@ int main(int argc, char ** argv)
 	{
 		perror("accept client 2");
 		exit(1);
+	}
+	else
+		list++;
+
+	printf("Accepted UNIX client!\n");
 	}
 
 	printf("%s", border);

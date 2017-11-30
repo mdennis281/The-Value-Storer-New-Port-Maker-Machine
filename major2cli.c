@@ -142,11 +142,25 @@ int main(int argc, char ** argv)
 
         //set all remote server info
         r_addr.sin_family = AF_INET;
-	r_addr.sin_addr.s_addr = inet_addr(argv[3]);
+	//r_addr.sin_addr.s_addr = inet_addr(argv[3]);
 	if(inetf == true)
+	{
+		r_addr.sin_addr.s_addr = inet_addr("192.168.122.106");
 		r_addr.sin_port = htons(15106);
+	}
 	else if(unixf == true)
+	{
+		r_addr.sin_addr.s_addr = inet_addr("192.168.122.129");
 		r_addr.sin_port = htons(15129);
+	}
+
+	//create remote socket
+	r_fd = socket(AF_INET, SOCK_STREAM, 0);
+	if(r_fd < 0)
+	{
+		perror("socket remote");
+		exit(1);
+	}
 
 	//bind remote
 	/*if(bind(r_fd, (struct sockaddr *)&r_addr, sizeof(r_addr)) < 1)
